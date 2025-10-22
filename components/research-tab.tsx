@@ -106,6 +106,23 @@ export function ResearchTab({ contacts, onContactsResearched, onContactsRemoved,
     setSelectedIds(new Set())
   }
 
+  const handleDeleteSingle = async (contactId: string) => {
+    const confirmed = confirm("Are you sure you want to delete this contact?");
+    if (!confirmed) return;
+
+    try {
+      await fetch(`/api/contacts?id=${contactId}`, {
+        method: "DELETE",
+      });
+
+      onContactsRemoved([contactId]);
+      alert("Contact deleted successfully");
+    } catch (error) {
+      console.error("Error deleting contact:", error);
+      alert("Failed to delete contact. Please try again.");
+    }
+  };
+
   const handleViewResearch = (contact: Contact) => {
     setSelectedContact(contact)
     setIsModalOpen(true)
@@ -141,9 +158,12 @@ export function ResearchTab({ contacts, onContactsResearched, onContactsRemoved,
   return (
     <div className="space-y-6 p-6">
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Research Investors</h1>
+        <h1 className="text-3xl font-bold text-foreground">
+          Research Investors
+        </h1>
         <p className="text-muted-foreground mt-1">
-          Select investors to research, then they&apos;ll be ready for email composition
+          Select investors to research, then they&apos;ll be ready for email
+          composition
         </p>
       </div>
 
@@ -162,7 +182,9 @@ export function ResearchTab({ contacts, onContactsResearched, onContactsRemoved,
         {filteredContacts.length === 0 ? (
           <Card className="p-12 text-center">
             <p className="text-muted-foreground">
-              {searchTerm ? "No investors found matching your search" : "No investors to research. Import a CSV first."}
+              {searchTerm
+                ? "No investors found matching your search"
+                : "No investors to research. Import a CSV first."}
             </p>
           </Card>
         ) : (
@@ -170,15 +192,23 @@ export function ResearchTab({ contacts, onContactsResearched, onContactsRemoved,
             {/* Select All */}
             <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
               <Checkbox
-                checked={selectedIds.size === filteredContacts.length && filteredContacts.length > 0}
+                checked={
+                  selectedIds.size === filteredContacts.length &&
+                  filteredContacts.length > 0
+                }
                 onCheckedChange={handleSelectAll}
               />
-              <span className="text-sm font-medium text-foreground">Select All ({selectedIds.size} selected)</span>
+              <span className="text-sm font-medium text-foreground">
+                Select All ({selectedIds.size} selected)
+              </span>
             </div>
 
             {/* Contact Cards */}
             {filteredContacts.map((contact) => (
-              <Card key={contact.id} className="p-4 hover:shadow-md transition-shadow">
+              <Card
+                key={contact.id}
+                className="p-4 hover:shadow-md transition-shadow"
+              >
                 <div className="flex items-start gap-4">
                   <Checkbox
                     checked={selectedIds.has(contact.id)}
@@ -189,16 +219,28 @@ export function ResearchTab({ contacts, onContactsResearched, onContactsRemoved,
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
-                        <h3 className="font-semibold text-foreground">{contact.name}</h3>
-                        {contact.title && <p className="text-sm text-muted-foreground">{contact.title}</p>}
-                        {contact.company && <p className="text-sm text-muted-foreground">{contact.company}</p>}
+                        <h3 className="font-semibold text-foreground">
+                          {contact.name}
+                        </h3>
+                        {contact.title && (
+                          <p className="text-sm text-muted-foreground">
+                            {contact.title}
+                          </p>
+                        )}
+                        {contact.company && (
+                          <p className="text-sm text-muted-foreground">
+                            {contact.company}
+                          </p>
+                        )}
                       </div>
 
                       {contact.researchStatus === "completed" && (
                         <div className="flex items-center gap-2">
                           <div className="flex items-center gap-1 text-green-600">
                             <CheckCircle2 className="w-4 h-4" />
-                            <span className="text-xs font-medium">Researched</span>
+                            <span className="text-xs font-medium">
+                              Researched
+                            </span>
                           </div>
                           <Button
                             variant="ghost"
@@ -235,7 +277,10 @@ export function ResearchTab({ contacts, onContactsResearched, onContactsRemoved,
                       {contact.email && (
                         <div>
                           <p className="text-muted-foreground">Email</p>
-                          <a href={`mailto:${contact.email}`} className="text-primary hover:underline truncate">
+                          <a
+                            href={`mailto:${contact.email}`}
+                            className="text-primary hover:underline truncate"
+                          >
                             {contact.email}
                           </a>
                         </div>
@@ -243,7 +288,10 @@ export function ResearchTab({ contacts, onContactsResearched, onContactsRemoved,
                       {contact.phone && (
                         <div>
                           <p className="text-muted-foreground">Phone</p>
-                          <a href={`tel:${contact.phone}`} className="text-primary hover:underline">
+                          <a
+                            href={`tel:${contact.phone}`}
+                            className="text-primary hover:underline"
+                          >
                             {contact.phone}
                           </a>
                         </div>
@@ -290,11 +338,22 @@ export function ResearchTab({ contacts, onContactsResearched, onContactsRemoved,
                       {contact.markets && (
                         <div>
                           <p className="text-muted-foreground">Markets</p>
-                          <p className="text-foreground truncate">{contact.markets.split(",")[0]}</p>
+                          <p className="text-foreground truncate">
+                            {contact.markets.split(",")[0]}
+                          </p>
                         </div>
                       )}
                     </div>
                   </div>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDeleteSingle(contact.id)}
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
                 </div>
               </Card>
             ))}
@@ -305,7 +364,11 @@ export function ResearchTab({ contacts, onContactsResearched, onContactsRemoved,
       {/* Action Buttons */}
       {selectedIds.size > 0 && (
         <div className="flex gap-2 sticky bottom-6">
-          <Button onClick={handleResearch} disabled={isResearching} className="flex-1 gap-2">
+          <Button
+            onClick={handleResearch}
+            disabled={isResearching}
+            className="flex-1 gap-2"
+          >
             {isResearching ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -318,11 +381,11 @@ export function ResearchTab({ contacts, onContactsResearched, onContactsRemoved,
               </>
             )}
           </Button>
-          
+
           {/* Move to Composer button - only show for completed research */}
-          {Array.from(selectedIds).every(id => {
-            const contact = contacts.find(c => c.id === id)
-            return contact?.researchStatus === 'completed'
+          {Array.from(selectedIds).every((id) => {
+            const contact = contacts.find((c) => c.id === id);
+            return contact?.researchStatus === "completed";
           }) && (
             <Button
               onClick={() => handleMoveToComposer(Array.from(selectedIds))}
@@ -333,7 +396,7 @@ export function ResearchTab({ contacts, onContactsResearched, onContactsRemoved,
               Move to Composer
             </Button>
           )}
-          
+
           <Button
             onClick={handleDelete}
             variant="outline"
@@ -352,5 +415,5 @@ export function ResearchTab({ contacts, onContactsResearched, onContactsRemoved,
         onClose={handleCloseModal}
       />
     </div>
-  )
+  );
 }

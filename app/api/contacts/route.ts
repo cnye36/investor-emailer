@@ -1,17 +1,21 @@
-import { supabase } from '@/lib/supabase'
-import { NextResponse } from 'next/server'
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 // GET all contacts
 export async function GET() {
   try {
     const { data, error } = await supabase
-      .from('investors')
-      .select('*')
-      .order('created_at', { ascending: false })
+      .from("investors")
+      .select("*")
+      .order("created_at", { ascending: false });
 
     if (error) {
-      console.error('Supabase error:', error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      console.error("Supabase error:", error);
+      return Response.json({ error: error.message }, { status: 500 });
     }
 
     // Map database fields to frontend Contact interface
@@ -34,44 +38,51 @@ export async function GET() {
       types: investor.types || undefined,
       stages: investor.stages || undefined,
       notes: investor.notes || undefined,
-      createdAt: investor.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
+      createdAt:
+        investor.created_at?.split("T")[0] ||
+        new Date().toISOString().split("T")[0],
       researchStatus: investor.research_status || undefined,
       researchData: investor.research_data || undefined,
-    }))
+    }));
 
-    return NextResponse.json(contacts)
+    return Response.json(contacts);
   } catch (error) {
-    console.error('Error fetching contacts:', error)
-    return NextResponse.json({ error: 'Failed to fetch contacts' }, { status: 500 })
+    console.error("Error fetching contacts:", error);
+    return Response.json(
+      { error: "Failed to fetch contacts" },
+      { status: 500 }
+    );
   }
 }
 
 // POST - Create new contact(s)
 export async function POST(request: Request) {
   try {
-    const body = await request.json()
-    const contacts = Array.isArray(body) ? body : [body]
+    const body = await request.json();
+    const contacts = Array.isArray(body) ? body : [body];
 
     // Check for existing contacts by email
-    const emails = contacts.map(contact => contact.email)
+    const emails = contacts.map((contact) => contact.email);
     const { data: existingContacts, error: checkError } = await supabase
-      .from('investors')
-      .select('email')
-      .in('email', emails)
+      .from("investors")
+      .select("email")
+      .in("email", emails);
 
     if (checkError) {
-      console.error('Error checking for existing contacts:', checkError)
-      return NextResponse.json({ error: checkError.message }, { status: 500 })
+      console.error("Error checking for existing contacts:", checkError);
+      return Response.json({ error: checkError.message }, { status: 500 });
     }
 
     // Filter out duplicates
-    const existingEmails = new Set(existingContacts?.map(c => c.email.toLowerCase()) || [])
-    const uniqueContacts = contacts.filter(contact => 
-      !existingEmails.has(contact.email.toLowerCase())
-    )
+    const existingEmails = new Set(
+      existingContacts?.map((c) => c.email.toLowerCase()) || []
+    );
+    const uniqueContacts = contacts.filter(
+      (contact) => !existingEmails.has(contact.email.toLowerCase())
+    );
 
     if (uniqueContacts.length === 0) {
-      return NextResponse.json([]) // No new contacts to insert
+      return Response.json([]); // No new contacts to insert
     }
 
     // Map frontend Contact interface to database fields
@@ -93,18 +104,18 @@ export async function POST(request: Request) {
       types: contact.types || null,
       stages: contact.stages || null,
       notes: contact.notes || null,
-      research_status: contact.researchStatus || 'pending',
+      research_status: contact.researchStatus || "pending",
       research_data: contact.researchData || null,
-    }))
+    }));
 
     const { data, error } = await supabase
-      .from('investors')
+      .from("investors")
       .insert(investorsToInsert)
-      .select()
+      .select();
 
     if (error) {
-      console.error('Supabase error:', error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      console.error("Supabase error:", error);
+      return Response.json({ error: error.message }, { status: 500 });
     }
 
     // Map back to frontend format
@@ -127,89 +138,110 @@ export async function POST(request: Request) {
       types: investor.types || undefined,
       stages: investor.stages || undefined,
       notes: investor.notes || undefined,
-      createdAt: investor.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
+      createdAt:
+        investor.created_at?.split("T")[0] ||
+        new Date().toISOString().split("T")[0],
       researchStatus: investor.research_status || undefined,
       researchData: investor.research_data || undefined,
-    }))
+    }));
 
-    return NextResponse.json(insertedContacts)
+    return Response.json(insertedContacts);
   } catch (error) {
-    console.error('Error creating contacts:', error)
-    return NextResponse.json({ error: 'Failed to create contacts' }, { status: 500 })
+    console.error("Error creating contacts:", error);
+    return Response.json(
+      { error: "Failed to create contacts" },
+      { status: 500 }
+    );
   }
 }
 
 // DELETE - Delete a contact
 export async function DELETE(request: Request) {
   try {
-    const { searchParams } = new URL(request.url)
-    const id = searchParams.get('id')
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
 
     if (!id) {
-      return NextResponse.json({ error: 'Contact ID is required' }, { status: 400 })
+      return Response.json(
+        { error: "Contact ID is required" },
+        { status: 400 }
+      );
     }
 
-    const { error } = await supabase
-      .from('investors')
-      .delete()
-      .eq('id', id)
+    const { error } = await supabase.from("investors").delete().eq("id", id);
 
     if (error) {
-      console.error('Supabase error:', error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      console.error("Supabase error:", error);
+      return Response.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true })
+    return Response.json({ success: true });
   } catch (error) {
-    console.error('Error deleting contact:', error)
-    return NextResponse.json({ error: 'Failed to delete contact' }, { status: 500 })
+    console.error("Error deleting contact:", error);
+    return Response.json(
+      { error: "Failed to delete contact" },
+      { status: 500 }
+    );
   }
 }
 
 // PATCH - Update a contact
 export async function PATCH(request: Request) {
   try {
-    const body = await request.json()
-    const { id, ...updates } = body
+    const body = await request.json();
+    const { id, ...updates } = body;
 
     if (!id) {
-      return NextResponse.json({ error: 'Contact ID is required' }, { status: 400 })
+      return Response.json(
+        { error: "Contact ID is required" },
+        { status: 400 }
+      );
     }
 
     // Map frontend Contact interface to database fields
-    const investorUpdates: Record<string, unknown> = {}
-    if (updates.name !== undefined) investorUpdates.name = updates.name
-    if (updates.email !== undefined) investorUpdates.email = updates.email
-    if (updates.phone !== undefined) investorUpdates.phone = updates.phone
-    if (updates.title !== undefined) investorUpdates.title = updates.title
-    if (updates.company !== undefined) investorUpdates.company = updates.company
-    if (updates.website !== undefined) investorUpdates.website = updates.website
-    if (updates.linkedin !== undefined) investorUpdates.linkedin_url = updates.linkedin
-    if (updates.twitter !== undefined) investorUpdates.twitter = updates.twitter
-    if (updates.facebook !== undefined) investorUpdates.facebook = updates.facebook
-    if (updates.country !== undefined) investorUpdates.country = updates.country
-    if (updates.state !== undefined) investorUpdates.state = updates.state
-    if (updates.city !== undefined) investorUpdates.city = updates.city
-    if (updates.markets !== undefined) investorUpdates.markets = updates.markets
-    if (updates.pastInvestments !== undefined) investorUpdates.past_investments = updates.pastInvestments
-    if (updates.types !== undefined) investorUpdates.types = updates.types
-    if (updates.stages !== undefined) investorUpdates.stages = updates.stages
-    if (updates.notes !== undefined) investorUpdates.notes = updates.notes
-    if (updates.researchStatus !== undefined) investorUpdates.research_status = updates.researchStatus
-    if (updates.researchData !== undefined) investorUpdates.research_data = updates.researchData
+    const investorUpdates: Record<string, unknown> = {};
+    if (updates.name !== undefined) investorUpdates.name = updates.name;
+    if (updates.email !== undefined) investorUpdates.email = updates.email;
+    if (updates.phone !== undefined) investorUpdates.phone = updates.phone;
+    if (updates.title !== undefined) investorUpdates.title = updates.title;
+    if (updates.company !== undefined)
+      investorUpdates.company = updates.company;
+    if (updates.website !== undefined)
+      investorUpdates.website = updates.website;
+    if (updates.linkedin !== undefined)
+      investorUpdates.linkedin_url = updates.linkedin;
+    if (updates.twitter !== undefined)
+      investorUpdates.twitter = updates.twitter;
+    if (updates.facebook !== undefined)
+      investorUpdates.facebook = updates.facebook;
+    if (updates.country !== undefined)
+      investorUpdates.country = updates.country;
+    if (updates.state !== undefined) investorUpdates.state = updates.state;
+    if (updates.city !== undefined) investorUpdates.city = updates.city;
+    if (updates.markets !== undefined)
+      investorUpdates.markets = updates.markets;
+    if (updates.pastInvestments !== undefined)
+      investorUpdates.past_investments = updates.pastInvestments;
+    if (updates.types !== undefined) investorUpdates.types = updates.types;
+    if (updates.stages !== undefined) investorUpdates.stages = updates.stages;
+    if (updates.notes !== undefined) investorUpdates.notes = updates.notes;
+    if (updates.researchStatus !== undefined)
+      investorUpdates.research_status = updates.researchStatus;
+    if (updates.researchData !== undefined)
+      investorUpdates.research_data = updates.researchData;
 
-    investorUpdates.updated_at = new Date().toISOString()
+    investorUpdates.updated_at = new Date().toISOString();
 
     const { data, error } = await supabase
-      .from('investors')
+      .from("investors")
       .update(investorUpdates)
-      .eq('id', id)
+      .eq("id", id)
       .select()
-      .single()
+      .single();
 
     if (error) {
-      console.error('Supabase error:', error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      console.error("Supabase error:", error);
+      return Response.json({ error: error.message }, { status: 500 });
     }
 
     // Map back to frontend format
@@ -232,15 +264,19 @@ export async function PATCH(request: Request) {
       types: data.types || undefined,
       stages: data.stages || undefined,
       notes: data.notes || undefined,
-      createdAt: data.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
+      createdAt:
+        data.created_at?.split("T")[0] ||
+        new Date().toISOString().split("T")[0],
       researchStatus: data.research_status || undefined,
       researchData: data.research_data || undefined,
-    }
+    };
 
-    return NextResponse.json(updatedContact)
+    return Response.json(updatedContact);
   } catch (error) {
-    console.error('Error updating contact:', error)
-    return NextResponse.json({ error: 'Failed to update contact' }, { status: 500 })
+    console.error("Error updating contact:", error);
+    return Response.json(
+      { error: "Failed to update contact" },
+      { status: 500 }
+    );
   }
 }
-

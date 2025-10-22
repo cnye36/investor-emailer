@@ -1,12 +1,26 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Search, Trash2, Mail, Phone, Building2, Upload, Globe, Linkedin, Twitter, Users } from "lucide-react"
+import {
+  Search,
+  Trash2,
+  Mail,
+  Phone,
+  Building2,
+  Upload,
+  Globe,
+  Linkedin,
+  Twitter,
+  Users,
+  CheckCircle2,
+  Plus,
+} from "lucide-react";
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { CSVUpload } from "./csv-upload"
+import { AddContactModal } from "./add-contact-modal"
 import type { Contact } from "./types"
 
 export function ContactManagement() {
@@ -15,6 +29,7 @@ export function ContactManagement() {
   const [showCSVUpload, setShowCSVUpload] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [selectedContacts, setSelectedContacts] = useState<Set<string>>(new Set())
+  const [isAddOpen, setIsAddOpen] = useState(false)
 
   // Fetch contacts from API on mount
   useEffect(() => {
@@ -131,6 +146,49 @@ export function ContactManagement() {
     alert(`Moved ${selectedContacts.size} contacts to research queue`)
   }
 
+  const handleMoveToEmailsSent = async () => {
+    if (selectedContacts.size === 0) return;
+
+    const confirmed = confirm(
+      `Are you sure you want to mark ${selectedContacts.size} contacts as emails sent?`
+    );
+    if (!confirmed) return;
+
+    try {
+      // Update contacts to have email_sent status
+      const updatedContacts = contacts.map((contact) =>
+        selectedContacts.has(contact.id)
+          ? { ...contact, researchStatus: "email_sent" as const }
+          : contact
+      );
+
+      // Update in database
+      const updatePromises = Array.from(selectedContacts).map(async (id) => {
+        try {
+          const contact = contacts.find((c) => c.id === id);
+          if (contact) {
+            await fetch("/api/contacts", {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ id, researchStatus: "email_sent" }),
+            });
+          }
+        } catch (error) {
+          console.error("Error updating contact:", error);
+        }
+      });
+
+      await Promise.all(updatePromises);
+
+      setContacts(updatedContacts);
+      setSelectedContacts(new Set());
+      alert(`Moved ${selectedContacts.size} contacts to emails sent`);
+    } catch (error) {
+      console.error("Error moving contacts to emails sent:", error);
+      alert("Failed to update some contacts. Please try again.");
+    }
+  };
+
   const handleContactsImported = async (importedContacts: Omit<Contact, "id" | "createdAt">[]) => {
     try {
       // Check for duplicates before sending to API
@@ -207,22 +265,48 @@ export function ContactManagement() {
     <div className="space-y-6 p-6">
       <div>
         <h1 className="text-3xl font-bold text-foreground">Contacts</h1>
-        <p className="text-muted-foreground mt-1">Manage your investor contacts</p>
+        <p className="text-muted-foreground mt-1">
+          Manage your investor contacts
+        </p>
       </div>
 
       <div className="flex gap-2 flex-wrap">
-        <Button onClick={() => setShowCSVUpload(!showCSVUpload)} variant="outline" className="gap-2">
+        <Button onClick={() => setIsAddOpen(true)} className="gap-2">
+          <Plus className="w-4 h-4" />
+          Add Contact
+        </Button>
+        <Button
+          onClick={() => setShowCSVUpload(!showCSVUpload)}
+          variant="outline"
+          className="gap-2"
+        >
           <Upload className="w-4 h-4" />
           Import CSV
         </Button>
-        
+
         {selectedContacts.size > 0 && (
           <>
-            <Button onClick={handleMoveToResearch} variant="default" className="gap-2">
+            <Button
+              onClick={handleMoveToResearch}
+              variant="default"
+              className="gap-2"
+            >
               <Users className="w-4 h-4" />
               Move to Research ({selectedContacts.size})
             </Button>
-            <Button onClick={handleBulkDelete} variant="destructive" className="gap-2">
+            <Button
+              onClick={handleMoveToEmailsSent}
+              variant="outline"
+              className="gap-2 border-green-200 text-green-700 hover:bg-green-50"
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              Mark as Emails Sent ({selectedContacts.size})
+            </Button>
+            <Button
+              onClick={handleBulkDelete}
+              variant="destructive"
+              className="gap-2"
+            >
               <Trash2 className="w-4 h-4" />
               Delete Selected ({selectedContacts.size})
             </Button>
@@ -230,7 +314,15 @@ export function ContactManagement() {
         )}
       </div>
 
-      {showCSVUpload && <CSVUpload onContactsImported={handleContactsImported} />}
+      {showCSVUpload && (
+        <CSVUpload onContactsImported={handleContactsImported} />
+      )}
+
+      <AddContactModal
+        open={isAddOpen}
+        onOpenChange={setIsAddOpen}
+        onCreated={(contact) => setContacts([contact, ...contacts])}
+      />
 
       <div className="flex gap-4 items-center">
         <div className="relative flex-1">
@@ -242,16 +334,21 @@ export function ContactManagement() {
             className="pl-10"
           />
         </div>
-        
+
         {filteredContacts.length > 0 && (
           <div className="flex items-center gap-2">
             <Checkbox
-              checked={selectedContacts.size === filteredContacts.length && filteredContacts.length > 0}
+              checked={
+                selectedContacts.size === filteredContacts.length &&
+                filteredContacts.length > 0
+              }
               onCheckedChange={handleSelectAll}
               className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
             />
             <span className="text-sm text-muted-foreground">
-              {selectedContacts.size === filteredContacts.length ? 'Deselect All' : 'Select All'}
+              {selectedContacts.size === filteredContacts.length
+                ? "Deselect All"
+                : "Select All"}
             </span>
           </div>
         )}
@@ -265,110 +362,129 @@ export function ContactManagement() {
         ) : filteredContacts.length === 0 ? (
           <Card className="p-12 text-center">
             <p className="text-muted-foreground">
-              {searchTerm ? "No contacts found matching your search" : "No contacts yet. Import a CSV to get started."}
+              {searchTerm
+                ? "No contacts found matching your search"
+                : "No contacts yet. Import a CSV to get started."}
             </p>
           </Card>
         ) : (
           filteredContacts.map((contact) => (
-            <Card key={contact.id} className="p-6 hover:shadow-md transition-shadow">
+            <Card
+              key={contact.id}
+              className="p-6 hover:shadow-md transition-shadow"
+            >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-start gap-3">
                   <Checkbox
                     checked={selectedContacts.has(contact.id)}
-                    onCheckedChange={(checked) => handleSelectContact(contact.id, checked as boolean)}
+                    onCheckedChange={(checked) =>
+                      handleSelectContact(contact.id, checked as boolean)
+                    }
                     className="mt-1 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                   />
                   <div className="flex-1 space-y-3">
-                  <div>
-                    <h3 className="text-lg font-semibold text-foreground">{contact.name}</h3>
-                    {contact.title && <p className="text-sm text-muted-foreground">{contact.title}</p>}
-                    {contact.company && (
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                        <Building2 className="w-4 h-4" />
-                        {contact.company}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Contact Details Grid */}
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 text-sm">
-                    {contact.email && (
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Mail className="w-4 h-4" />
-                        <a href={`mailto:${contact.email}`} className="hover:text-primary transition-colors truncate">
-                          {contact.email}
-                        </a>
-                      </div>
-                    )}
-                    {contact.phone && (
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Phone className="w-4 h-4" />
-                        <a href={`tel:${contact.phone}`} className="hover:text-primary transition-colors">
-                          {contact.phone}
-                        </a>
-                      </div>
-                    )}
-                    {contact.website && (
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Globe className="w-4 h-4" />
-                        <a
-                          href={contact.website}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="hover:text-primary transition-colors truncate"
-                        >
-                          Website
-                        </a>
-                      </div>
-                    )}
-                    {contact.linkedin && (
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Linkedin className="w-4 h-4" />
-                        <a
-                          href={contact.linkedin}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="hover:text-primary transition-colors truncate"
-                        >
-                          LinkedIn
-                        </a>
-                      </div>
-                    )}
-                    {contact.twitter && (
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Twitter className="w-4 h-4" />
-                        <a
-                          href={contact.twitter}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="hover:text-primary transition-colors truncate"
-                        >
-                          Twitter
-                        </a>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Additional Info */}
-                  {(contact.markets || contact.stages || contact.types) && (
-                    <div className="flex flex-wrap gap-2 pt-2">
-                      {contact.markets && (
-                        <span className="inline-block px-2 py-1 bg-secondary text-secondary-foreground text-xs rounded-full">
-                          {contact.markets.split(",")[0]}
-                        </span>
+                    <div>
+                      <h3 className="text-lg font-semibold text-foreground">
+                        {contact.name}
+                      </h3>
+                      {contact.title && (
+                        <p className="text-sm text-muted-foreground">
+                          {contact.title}
+                        </p>
                       )}
-                      {contact.stages && (
-                        <span className="inline-block px-2 py-1 bg-secondary text-secondary-foreground text-xs rounded-full">
-                          {contact.stages.split(",")[0]}
-                        </span>
-                      )}
-                      {contact.types && (
-                        <span className="inline-block px-2 py-1 bg-secondary text-secondary-foreground text-xs rounded-full">
-                          {contact.types.split(",")[0]}
-                        </span>
+                      {contact.company && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                          <Building2 className="w-4 h-4" />
+                          {contact.company}
+                        </div>
                       )}
                     </div>
-                  )}
+
+                    {/* Contact Details Grid */}
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 text-sm">
+                      {contact.email && (
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Mail className="w-4 h-4" />
+                          <a
+                            href={`mailto:${contact.email}`}
+                            className="hover:text-primary transition-colors truncate"
+                          >
+                            {contact.email}
+                          </a>
+                        </div>
+                      )}
+                      {contact.phone && (
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Phone className="w-4 h-4" />
+                          <a
+                            href={`tel:${contact.phone}`}
+                            className="hover:text-primary transition-colors"
+                          >
+                            {contact.phone}
+                          </a>
+                        </div>
+                      )}
+                      {contact.website && (
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Globe className="w-4 h-4" />
+                          <a
+                            href={contact.website}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:text-primary transition-colors truncate"
+                          >
+                            Website
+                          </a>
+                        </div>
+                      )}
+                      {contact.linkedin && (
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Linkedin className="w-4 h-4" />
+                          <a
+                            href={contact.linkedin}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:text-primary transition-colors truncate"
+                          >
+                            LinkedIn
+                          </a>
+                        </div>
+                      )}
+                      {contact.twitter && (
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Twitter className="w-4 h-4" />
+                          <a
+                            href={contact.twitter}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:text-primary transition-colors truncate"
+                          >
+                            Twitter
+                          </a>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Additional Info */}
+                    {(contact.markets || contact.stages || contact.types) && (
+                      <div className="flex flex-wrap gap-2 pt-2">
+                        {contact.markets && (
+                          <span className="inline-block px-2 py-1 bg-secondary text-secondary-foreground text-xs rounded-full">
+                            {contact.markets.split(",")[0]}
+                          </span>
+                        )}
+                        {contact.stages && (
+                          <span className="inline-block px-2 py-1 bg-secondary text-secondary-foreground text-xs rounded-full">
+                            {contact.stages.split(",")[0]}
+                          </span>
+                        )}
+                        {contact.types && (
+                          <span className="inline-block px-2 py-1 bg-secondary text-secondary-foreground text-xs rounded-full">
+                            {contact.types.split(",")[0]}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -392,14 +508,18 @@ export function ContactManagement() {
           <p className="text-sm text-muted-foreground">Total Contacts</p>
         </div>
         <div className="text-center">
-          <p className="text-2xl font-bold text-primary">{filteredContacts.length}</p>
+          <p className="text-2xl font-bold text-primary">
+            {filteredContacts.length}
+          </p>
           <p className="text-sm text-muted-foreground">Showing</p>
         </div>
         <div className="text-center">
-          <p className="text-2xl font-bold text-primary">{selectedContacts.size}</p>
+          <p className="text-2xl font-bold text-primary">
+            {selectedContacts.size}
+          </p>
           <p className="text-sm text-muted-foreground">Selected</p>
         </div>
       </div>
     </div>
-  )
+  );
 }

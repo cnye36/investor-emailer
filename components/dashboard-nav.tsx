@@ -10,6 +10,7 @@ import {
   Zap,
   Settings,
   Send,
+  Calendar,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -20,6 +21,7 @@ export function DashboardNav() {
     { href: "/dashboard", label: "Contacts", icon: Users },
     { href: "/research", label: "Research", icon: Zap },
     { href: "/composer", label: "Email Composer", icon: Mail },
+    { href: "/campaigns", label: "Campaigns", icon: Calendar },
     { href: "/emails-sent", label: "Emails Sent", icon: Send },
     { href: "/history", label: "Email History", icon: History },
     { href: "/analytics", label: "Analytics", icon: BarChart3 },

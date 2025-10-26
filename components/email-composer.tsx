@@ -74,13 +74,17 @@ export function EmailComposer({ contacts }: EmailComposerProps) {
     <div className="space-y-6 p-6">
       <div>
         <h1 className="text-3xl font-bold text-foreground">Email Composer</h1>
-        <p className="text-muted-foreground mt-1">Generate and send personalized emails to researched investors</p>
+        <p className="text-muted-foreground mt-1">
+          Generate and send personalized emails to researched investors
+        </p>
       </div>
 
       {success && (
         <Alert className="border-green-200 bg-green-50">
           <CheckCircle2 className="h-4 w-4 text-green-600" />
-          <AlertDescription className="text-green-800">Email sent successfully!</AlertDescription>
+          <AlertDescription className="text-green-800">
+            Email sent successfully!
+          </AlertDescription>
         </Alert>
       )}
 
@@ -95,11 +99,14 @@ export function EmailComposer({ contacts }: EmailComposerProps) {
         {/* Left Column - Contact Selection */}
         <div className="lg:col-span-1">
           <Card className="p-6 sticky top-24">
-            <h2 className="text-lg font-semibold text-foreground mb-4">Select Investor</h2>
+            <h2 className="text-lg font-semibold text-foreground mb-4">
+              Select Investor
+            </h2>
 
             {contacts.length === 0 ? (
               <p className="text-sm text-muted-foreground">
-                No researched contacts available. Go to Research tab to research investors first.
+                No researched contacts available. Go to Research tab to research
+                investors first.
               </p>
             ) : (
               <div className="space-y-2 max-h-96 overflow-y-auto">
@@ -113,10 +120,20 @@ export function EmailComposer({ contacts }: EmailComposerProps) {
                         : "border-border hover:border-primary/50"
                     }`}
                   >
-                    <p className="font-medium text-foreground text-sm">{contact.name}</p>
-                    {contact.title && <p className="text-xs text-muted-foreground">{contact.title}</p>}
-                    <p className="text-xs text-muted-foreground">{contact.company}</p>
-                    <p className="text-xs text-muted-foreground">{contact.email}</p>
+                    <p className="font-medium text-foreground text-sm">
+                      {contact.name}
+                    </p>
+                    {contact.title && (
+                      <p className="text-xs text-muted-foreground">
+                        {contact.title}
+                      </p>
+                    )}
+                    <p className="text-xs text-muted-foreground">
+                      {contact.company}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {contact.email}
+                    </p>
                   </button>
                 ))}
               </div>
@@ -130,23 +147,31 @@ export function EmailComposer({ contacts }: EmailComposerProps) {
             <>
               {/* Contact Info Card */}
               <Card className="p-6 bg-muted/50">
-                <h3 className="text-lg font-semibold text-foreground mb-3">Investor Information</h3>
+                <h3 className="text-lg font-semibold text-foreground mb-3">
+                  Investor Information
+                </h3>
                 <div className="space-y-3 text-sm">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <p className="text-muted-foreground">Name</p>
-                      <p className="font-medium text-foreground">{selectedContact.name}</p>
+                      <p className="font-medium text-foreground">
+                        {selectedContact.name}
+                      </p>
                     </div>
                     {selectedContact.title && (
                       <div>
                         <p className="text-muted-foreground">Title</p>
-                        <p className="font-medium text-foreground">{selectedContact.title}</p>
+                        <p className="font-medium text-foreground">
+                          {selectedContact.title}
+                        </p>
                       </div>
                     )}
                     {selectedContact.company && (
                       <div>
                         <p className="text-muted-foreground">Company</p>
-                        <p className="font-medium text-foreground">{selectedContact.company}</p>
+                        <p className="font-medium text-foreground">
+                          {selectedContact.company}
+                        </p>
                       </div>
                     )}
                     {selectedContact.city && (
@@ -154,7 +179,9 @@ export function EmailComposer({ contacts }: EmailComposerProps) {
                         <p className="text-muted-foreground">Location</p>
                         <p className="font-medium text-foreground">
                           {selectedContact.city}
-                          {selectedContact.state ? `, ${selectedContact.state}` : ""}
+                          {selectedContact.state
+                            ? `, ${selectedContact.state}`
+                            : ""}
                         </p>
                       </div>
                     )}
@@ -218,23 +245,31 @@ export function EmailComposer({ contacts }: EmailComposerProps) {
                   {/* Research Data */}
                   {selectedContact.researchData && (
                     <div className="pt-2 border-t border-border">
-                      <p className="text-muted-foreground font-medium mb-2">Research Insights</p>
+                      <p className="text-muted-foreground font-medium mb-2">
+                        Research Insights
+                      </p>
                       {selectedContact.researchData.insights && (
-                        <p className="text-foreground text-xs">{selectedContact.researchData.insights}</p>
+                        <p className="text-foreground text-xs">
+                          {selectedContact.researchData.insights}
+                        </p>
                       )}
                       {selectedContact.researchData.focusAreas &&
                         selectedContact.researchData.focusAreas.length > 0 && (
                           <div className="mt-2">
-                            <p className="text-muted-foreground text-xs mb-1">Focus Areas:</p>
+                            <p className="text-muted-foreground text-xs mb-1">
+                              Focus Areas:
+                            </p>
                             <div className="flex flex-wrap gap-1">
-                              {selectedContact.researchData.focusAreas.slice(0, 3).map((area, idx) => (
-                                <span
-                                  key={idx}
-                                  className="inline-block px-2 py-1 bg-primary/10 text-primary text-xs rounded"
-                                >
-                                  {area}
-                                </span>
-                              ))}
+                              {selectedContact.researchData.focusAreas
+                                .slice(0, 3)
+                                .map((area, idx) => (
+                                  <span
+                                    key={idx}
+                                    className="inline-block px-2 py-1 bg-primary/10 text-primary text-xs rounded"
+                                  >
+                                    {area}
+                                  </span>
+                                ))}
                             </div>
                           </div>
                         )}
@@ -245,29 +280,58 @@ export function EmailComposer({ contacts }: EmailComposerProps) {
 
               {/* AI Generator Toggle */}
               {!showAIGenerator ? (
-                <Button onClick={() => setShowAIGenerator(true)} variant="outline" className="w-full gap-2">
+                <Button
+                  onClick={() => setShowAIGenerator(true)}
+                  variant="outline"
+                  className="w-full gap-2"
+                >
                   <Sparkles className="w-4 h-4" />
                   Generate Email with AI
                 </Button>
               ) : (
                 <Card className="p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-foreground">AI Email Generator</h3>
-                    <Button variant="ghost" size="sm" onClick={() => setShowAIGenerator(false)}>
+                    <h3 className="text-lg font-semibold text-foreground">
+                      AI Email Generator
+                    </h3>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowAIGenerator(false)}
+                    >
                       Close
                     </Button>
                   </div>
-                  <AIEmailGenerator contact={selectedContact} onEmailGenerated={handleEmailGenerated} />
+                  <AIEmailGenerator
+                    contact={{
+                      name: selectedContact.name || "",
+                      email: selectedContact.email || "",
+                      id: selectedContact.id || "",
+                      createdAt: selectedContact.createdAt || "",
+                      phone: selectedContact.phone || "",
+                      website: selectedContact.website || "",
+                      linkedin: selectedContact.linkedin || "",
+                      twitter: selectedContact.twitter || "",
+                      company: selectedContact.company || "",
+                      title: selectedContact.title || "",
+                      markets: selectedContact.markets || "",
+                    }}
+                    onEmailGenerated={handleEmailGenerated}
+                  />
                 </Card>
               )}
 
               {/* Email Composition */}
               <Card className="p-6">
-                <h3 className="text-lg font-semibold text-foreground mb-4">Compose Email</h3>
+                <h3 className="text-lg font-semibold text-foreground mb-4">
+                  Compose Email
+                </h3>
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">Subject Line</label>
+                    <label className="block text-sm font-medium text-foreground mb-2">
+                      Subject Line
+                    </label>
                     <Input
                       value={subject}
                       onChange={(e) => setSubject(e.target.value)}
@@ -277,7 +341,9 @@ export function EmailComposer({ contacts }: EmailComposerProps) {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">Email Body</label>
+                    <label className="block text-sm font-medium text-foreground mb-2">
+                      Email Body
+                    </label>
                     <textarea
                       value={body}
                       onChange={(e) => setBody(e.target.value)}
@@ -290,14 +356,18 @@ export function EmailComposer({ contacts }: EmailComposerProps) {
                   <div className="flex gap-2 justify-end pt-4">
                     <Button
                       onClick={() => {
-                        setSubject("")
-                        setBody("")
+                        setSubject("");
+                        setBody("");
                       }}
                       variant="outline"
                     >
                       Clear
                     </Button>
-                    <Button onClick={handleSendEmail} disabled={isSending || !subject || !body} className="gap-2">
+                    <Button
+                      onClick={handleSendEmail}
+                      disabled={isSending || !subject || !body}
+                      className="gap-2"
+                    >
                       {isSending ? (
                         <>
                           <Loader2 className="w-4 h-4 animate-spin" />
@@ -316,11 +386,13 @@ export function EmailComposer({ contacts }: EmailComposerProps) {
             </>
           ) : (
             <Card className="p-12 text-center">
-              <p className="text-muted-foreground">Select an investor from the list to compose an email</p>
+              <p className="text-muted-foreground">
+                Select an investor from the list to compose an email
+              </p>
             </Card>
           )}
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -4,18 +4,10 @@ import type React from "react"
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { Contact } from "./types";
 import { Input } from "@/components/ui/input"
 import { X } from "lucide-react"
 
-interface Contact {
-  name: string
-  email: string
-  phone: string
-  company: string
-  position: string
-  industry: string
-  notes: string
-}
 
 interface ContactFormProps {
   contact?: Contact & { id: string; createdAt: string }
@@ -26,15 +18,17 @@ interface ContactFormProps {
 export function ContactForm({ contact, onSubmit, onCancel }: ContactFormProps) {
   const [formData, setFormData] = useState<Contact>(
     contact || {
+      id: "",
       name: "",
       email: "",
       phone: "",
       company: "",
-      position: "",
-      industry: "",
+      title: "",
+      markets: "",
       notes: "",
-    },
-  )
+      createdAt: "",
+    }
+  );
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
@@ -49,15 +43,23 @@ export function ContactForm({ contact, onSubmit, onCancel }: ContactFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold text-foreground">{contact ? "Edit Contact" : "Add New Contact"}</h2>
-        <button type="button" onClick={onCancel} className="text-muted-foreground hover:text-foreground">
+        <h2 className="text-xl font-semibold text-foreground">
+          {contact ? "Edit Contact" : "Add New Contact"}
+        </h2>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="text-muted-foreground hover:text-foreground"
+        >
           <X className="w-5 h-5" />
         </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-foreground mb-1">Name *</label>
+          <label className="block text-sm font-medium text-foreground mb-1">
+            Name *
+          </label>
           <Input
             type="text"
             name="name"
@@ -69,7 +71,9 @@ export function ContactForm({ contact, onSubmit, onCancel }: ContactFormProps) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-foreground mb-1">Email *</label>
+          <label className="block text-sm font-medium text-foreground mb-1">
+            Email *
+          </label>
           <Input
             type="email"
             name="email"
@@ -81,7 +85,9 @@ export function ContactForm({ contact, onSubmit, onCancel }: ContactFormProps) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-foreground mb-1">Phone</label>
+          <label className="block text-sm font-medium text-foreground mb-1">
+            Phone
+          </label>
           <Input
             type="tel"
             name="phone"
@@ -92,7 +98,9 @@ export function ContactForm({ contact, onSubmit, onCancel }: ContactFormProps) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-foreground mb-1">Company *</label>
+          <label className="block text-sm font-medium text-foreground mb-1">
+            Company *
+          </label>
           <Input
             type="text"
             name="company"
@@ -104,21 +112,25 @@ export function ContactForm({ contact, onSubmit, onCancel }: ContactFormProps) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-foreground mb-1">Position</label>
+          <label className="block text-sm font-medium text-foreground mb-1">
+            Position
+          </label>
           <Input
             type="text"
             name="position"
-            value={formData.position}
+            value={formData.title}
             onChange={handleChange}
             placeholder="Job title"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-foreground mb-1">Industry</label>
+          <label className="block text-sm font-medium text-foreground mb-1">
+            Industry
+          </label>
           <select
             name="industry"
-            value={formData.industry}
+            value={formData.markets}
             onChange={handleChange}
             className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground"
           >
@@ -134,7 +146,9 @@ export function ContactForm({ contact, onSubmit, onCancel }: ContactFormProps) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-foreground mb-1">Notes</label>
+        <label className="block text-sm font-medium text-foreground mb-1">
+          Notes
+        </label>
         <textarea
           name="notes"
           value={formData.notes}
@@ -149,8 +163,10 @@ export function ContactForm({ contact, onSubmit, onCancel }: ContactFormProps) {
         <Button type="button" variant="outline" onClick={onCancel}>
           Cancel
         </Button>
-        <Button type="submit">{contact ? "Update Contact" : "Add Contact"}</Button>
+        <Button type="submit">
+          {contact ? "Update Contact" : "Add Contact"}
+        </Button>
       </div>
     </form>
-  )
+  );
 }

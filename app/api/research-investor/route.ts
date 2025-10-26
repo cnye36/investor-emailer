@@ -44,7 +44,13 @@ export async function POST(request: Request) {
         
         if (searchResponse.ok) {
           const searchData = await searchResponse.json()
-          webSearchResults = `\n\nWeb Search Results:\n${searchData.answer || 'No additional information found.'}\n\nSources: ${searchData.results?.map((r: any) => r.title).join(', ') || 'N/A'}`
+          webSearchResults = `\n\nWeb Search Results:\n${
+            searchData.answer || "No additional information found."
+          }\n\nSources: ${
+            searchData.results
+              ?.map((r: Record<string, unknown>) => r.title)
+              .join(", ") || "N/A"
+          }`;
         }
       } catch (error) {
         console.log('Web search failed:', error)

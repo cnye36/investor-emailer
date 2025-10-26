@@ -20,8 +20,7 @@ export async function POST(request: Request) {
       3. Create curiosity or relevance to their investment focus
       4. Avoid spam trigger words
       5. Return ONLY the subject line, nothing else`,
-      maxTokens: 50,
-    })
+    });
 
     return Response.json({
       success: true,

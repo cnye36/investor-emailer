@@ -35,3 +35,48 @@ export interface Contact {
     completedAt?: string;
   };
 }
+
+export interface Campaign {
+  id: string;
+  userId: string;
+  name: string;
+  description?: string;
+  status: "draft" | "active" | "paused" | "completed";
+  createdAt: string;
+  updatedAt: string;
+  followUpDays?: number[];
+  totalContacts?: number;
+  sentEmails?: number;
+  pendingEmails?: number;
+}
+
+export interface CampaignSchedule {
+  id: string;
+  campaignId: string;
+  contactId: string;
+  emailType:
+    | "initial"
+    | "follow_up_1"
+    | "follow_up_2"
+    | "follow_up_3"
+    | "follow_up_4"
+    | "follow_up_5";
+  scheduledFor: string;
+  status: "pending" | "sent" | "failed" | "cancelled";
+  emailSubject?: string;
+  emailBody?: string;
+  createdAt: string;
+  contact?: Contact;
+}
+
+export interface CampaignTemplate {
+  id: string;
+  name: string;
+  description: string;
+  followUpDays: number[];
+  initialSubject: string;
+  initialBody: string;
+  followUpSubjects: string[];
+  followUpBodies: string[];
+  isDefault?: boolean;
+}

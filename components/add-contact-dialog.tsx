@@ -10,9 +10,9 @@ import { Label } from "@/components/ui/label"
 import { Loader2 } from "lucide-react"
 
 interface AddContactDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onAdd: (investor: any) => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onAdd: (investor: Record<string, unknown>) => void;
 }
 
 export function AddContactDialog({ open, onOpenChange, onAdd }: AddContactDialogProps) {

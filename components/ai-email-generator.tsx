@@ -6,14 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-
-interface Contact {
-  name: string
-  email: string
-  company: string
-  position: string
-  industry: string
-}
+import { Contact } from "./types"
 
 interface AIEmailGeneratorProps {
   contact: Contact
@@ -70,7 +63,7 @@ export function AIEmailGenerator({ contact, onEmailGenerated }: AIEmailGenerator
         body: JSON.stringify({
           contactName: contact.name,
           companyName,
-          investorFocus: contact.industry,
+          investorFocus: contact.markets,
         }),
       })
 
@@ -87,8 +80,8 @@ export function AIEmailGenerator({ contact, onEmailGenerated }: AIEmailGenerator
         body: JSON.stringify({
           contactName: contact.name,
           contactCompany: contact.company,
-          contactPosition: contact.position,
-          investorFocus: contact.industry,
+          contactPosition: contact.title,
+          investorFocus: contact.markets,
           companyName,
           companyDescription,
           fundingStage,
@@ -192,10 +185,10 @@ export function AIEmailGenerator({ contact, onEmailGenerated }: AIEmailGenerator
             <span className="font-medium text-foreground">Company:</span> {contact.company}
           </p>
           <p>
-            <span className="font-medium text-foreground">Position:</span> {contact.position}
+            <span className="font-medium text-foreground">Position:</span> {contact.title}
           </p>
           <p>
-            <span className="font-medium text-foreground">Focus:</span> {contact.industry}
+            <span className="font-medium text-foreground">Focus:</span> {contact.markets}
           </p>
         </div>
       </Card>

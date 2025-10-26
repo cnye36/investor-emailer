@@ -1,6 +1,6 @@
 "use client"
 
-import type { Contact } from "./contact-management"
+import type { Contact } from "./types";
 import { ContactCard } from "./contact-card"
 
 interface ContactListProps {

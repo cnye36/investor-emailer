@@ -30,10 +30,20 @@ export function ContactsView() {
       investor.company?.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
-  const handleAddInvestor = (investor: Investor) => {
-    setInvestors([...investors, { ...investor, id: Math.random().toString() }])
-    setShowAddDialog(false)
-  }
+  const handleAddInvestor = (investor: Record<string, unknown>) => {
+    const newInvestor: Investor = {
+      id: Math.random().toString(),
+      name: investor.name as string,
+      email: investor.email as string,
+      company: investor.company as string,
+      website: investor.website as string,
+      linkedin_url: investor.linkedin_url as string,
+      focus_areas: (investor.focus_areas as string[]) || [],
+      investment_range: investor.investment_range as string,
+    };
+    setInvestors([...investors, newInvestor]);
+    setShowAddDialog(false);
+  };
 
   const handleDeleteInvestor = (id: string) => {
     setInvestors(investors.filter((inv) => inv.id !== id))
